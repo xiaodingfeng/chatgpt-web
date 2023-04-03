@@ -83,6 +83,9 @@ function startAudio() {
 //停止录音
 function endAudio() {
 	recording.value = false
+	if (!recorder.value) {
+		return
+	}
 	recorder.value.stop()
 	recorder.value.ondataavailable = (event) => {
 		const blob = new Blob([event.data], { type: 'audio/wav' });
@@ -511,8 +514,6 @@ const placeholder = computed(() => {
 const buttonDisabled = computed(() => {
   return loading.value || !prompt.value || prompt.value.trim() === ''
 })
-
-const microphoneDisabled = false
 
 const footerClass = computed(() => {
   let classes = ['p-4']

@@ -1,4 +1,4 @@
-<script setup lang='ts'>
+<script lang="ts" setup>
 import { defineAsyncComponent, ref } from 'vue'
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
 

@@ -8,12 +8,13 @@ export type Language = 'zh-CN' | 'zh-TW' | 'en-US'
 
 export interface AppState {
   siderCollapsed: boolean
+	siderRightCollapsed: boolean
   theme: Theme
   language: Language
 }
 
 export function defaultSetting(): AppState {
-  return { siderCollapsed: false, theme: 'light', language: 'zh-CN' }
+  return { siderCollapsed: false,siderRightCollapsed:false, theme: 'light', language: 'zh-CN' }
 }
 
 export function getLocalSetting(): AppState {

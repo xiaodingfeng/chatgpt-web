@@ -11,6 +11,11 @@ export const useAppStore = defineStore('app-store', {
       this.recordState()
     },
 
+		setSiderRightCollapsed(collapsed: boolean) {
+			this.siderRightCollapsed = collapsed
+			this.recordState()
+		},
+
     setTheme(theme: Theme) {
       this.theme = theme
       this.recordState()

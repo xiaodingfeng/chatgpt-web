@@ -3,7 +3,7 @@ import type { PluginOption } from 'vite'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
-
+const Timestamp = new Date().getTime();//随机时间戳
 function setupPlugins(env: ImportMetaEnv): PluginOption[] {
   return [
     vue(),
@@ -49,6 +49,13 @@ export default defineConfig((env) => {
       commonjsOptions: {
         ignoreTryCatch: false,
       },
+			rollupOptions: {
+				output: {
+					chunkFileNames: `static/js/[name].[hash]${Timestamp}.js`,
+					entryFileNames: `static/js/[name].[hash]${Timestamp}.js`,
+					assetFileNames: `static/[ext]/[name].[hash]${Timestamp}.[ext]`,
+				},
+			}
     },
   }
 })

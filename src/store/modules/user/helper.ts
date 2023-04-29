@@ -17,7 +17,7 @@ export function defaultSetting(): UserState {
     userInfo: {
       avatar: 'https://fengzhengx.cn/upload/2021/01/logo-df2a3ea06ad34f39a31f04ec1ccce41d.png',
       name: 'FengZheng',
-      description: 'Code from <a href="https://github.com/Chanzhaoyu/chatgpt-bot" class="text-blue-500" target="_blank" >Github</a>',
+      description: 'website <a href="https://fengzhengx.cn/" class="text-blue-500" target="_blank" >fengzhengx</a>',
     },
   }
 }

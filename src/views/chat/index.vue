@@ -16,7 +16,7 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, usePromptStore } from '@/store'
 import {fetchChatAPIProcess, fetchTranscription} from '@/api'
 import { t } from '@/locales'
-
+import bus from '@/utils/emit/event-bus';
 let controller = new AbortController()
 
 const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
@@ -126,16 +126,19 @@ function endAudio() {
 	}
 	ms.success(t('chat.endAudio'))
 }
-
+bus.on('promptsDialogEvent', (payload) => {
+	prompt.value = payload
+	// alert(prompt.value)
+	onConversation()
+});
 async function onConversation() {
   let message = prompt.value
+	const selfSystemMessage = null
+	if (loading.value)
+		return
 
-  if (loading.value)
-    return
-
-  if (!message || message.trim() === '')
-    return
-
+	if (!message || message.trim() === '')
+		return
   controller = new AbortController()
 
   addChat(
@@ -146,6 +149,7 @@ async function onConversation() {
       inversion: true,
       error: false,
       conversationOptions: null,
+			selfSystemMessage: selfSystemMessage,
       requestOptions: { prompt: message, options: null },
     },
   )
@@ -156,7 +160,6 @@ async function onConversation() {
 
   let options: Chat.ConversationRequest = {}
   const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
-
   if (lastContext && usingContext.value)
     options = { ...lastContext }
 
@@ -169,6 +172,7 @@ async function onConversation() {
       inversion: false,
       error: false,
       conversationOptions: null,
+			selfSystemMessage: selfSystemMessage,
       requestOptions: { prompt: message, options: { ...options } },
     },
   )
@@ -200,6 +204,7 @@ async function onConversation() {
                 inversion: false,
                 error: false,
                 loading: true,
+								selfSystemMessage: selfSystemMessage,
                 conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
                 requestOptions: { prompt: message, options: { ...options } },
               },
@@ -264,6 +269,7 @@ async function onConversation() {
         error: true,
         loading: false,
         conversationOptions: null,
+				selfSystemMessage: selfSystemMessage,
         requestOptions: { prompt: message, options: { ...options } },
       },
     )
@@ -280,7 +286,7 @@ async function onRegenerate(index: number) {
 
   controller = new AbortController()
 
-  const { requestOptions } = dataSources.value[index]
+  const { requestOptions, selfSystemMessage } = dataSources.value[index]
 
   let message = requestOptions?.prompt ?? ''
 
@@ -301,6 +307,7 @@ async function onRegenerate(index: number) {
       error: false,
       loading: true,
       conversationOptions: null,
+			selfSystemMessage: selfSystemMessage,
 			requestOptions: { prompt: message, options: { ...options } },
     },
   )
@@ -332,6 +339,7 @@ async function onRegenerate(index: number) {
                 error: false,
                 loading: true,
                 conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
+								selfSystemMessage: selfSystemMessage,
 								requestOptions: { prompt: message, options: { ...options } },
               },
             )
@@ -376,6 +384,7 @@ async function onRegenerate(index: number) {
         error: true,
         loading: false,
         conversationOptions: null,
+				selfSystemMessage: selfSystemMessage,
 				requestOptions: { prompt: message, options: { ...options } },
       },
     )

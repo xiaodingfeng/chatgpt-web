@@ -1,69 +1,91 @@
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref} from 'vue'
+import { computed, defineAsyncComponent, ref,defineExpose} from 'vue'
 import { defineComponent } from 'vue'
-import { NModal, NTabPane, NTabs } from 'naive-ui'
+import { NModal, NFormItem, NForm } from 'naive-ui'
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
-import { NAutoComplete, NInput,NButton, NInputGroup,useMessage } from 'naive-ui'
-const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
-interface DataProps {
-	renderKey: string
-	renderValue: string
-	key: string
-	value: string
-}
+import { NAutoComplete, NInput,NButton, NInputGroup,useMessage,NCol,NRow,FormItemRule,FormRules,FormInst,FormItemInst,NSelect } from 'naive-ui'
+import {promptsJson, groupPromptsJson, filterIdJson} from './prompts-json'
+import IndexVue from '@/views/chat/index.vue'
+import bus from '@/utils/emit/event-bus';
 
-interface Props {
-	visible: boolean
-}
-
-interface Emit {
-	(e: 'update:visible', visible: boolean): void
-}
 const ms = useMessage()
-const props = defineProps<Props>()
-
-const emit = defineEmits<Emit>()
-
-const show = computed({
-	get: () => props.visible,
-	set: (visible: boolean) => emit('update:visible', visible),
-})
-const prompt = ref<string>('2023-04-29 loading')
 const showModal = ref(false)
-function handleClickConfirm() {
-	ms.success('暂未实现')
+const promptsJsonOne = ref({
+})
+const promptsFormConfig = ref({})
+const model = ref({})
+const message = useMessage()
+const show = ref(false)
+const initData = (showFlag: boolean, id : string) => {
+	promptsJsonOne.value = getFormConfig(id)
+	if (!promptsJsonOne.value || !promptsJsonOne.value.prompt) {
+		ms.error('prompts 获取失败！')
+		show.value = false
+	} else {
+		promptsFormConfig.value = promptsJsonOne.value.formConfig
+		model.value = {}
+		show.value = showFlag
+	}
 }
+function getFormConfig(id : string) {
+	if (id) {
+		const idJson = filterIdJson(id);
+		if (!idJson) {
+			return null
+		}
+		return idJson[0]
+	}
+	return null
+}
+
+function handleValidateButtonClick (e: MouseEvent) {
+	const value = model.value;
+	let flag = true
+	promptsFormConfig.value.formItem.forEach(v => {
+		if (v.required) {
+			if (!value[v.prop]) {
+				ms.error('请输入' + v.name)
+				flag = false
+				return
+			}
+		}
+	})
+	if (!flag) {
+		return
+	}
+	show.value = false
+	bus.emit('promptsDialogEvent', promptsJsonOne.value.prompt.replace(/\{(\w+)\}/g, (match, key) => value[key]));
+}
+defineExpose({ initData });
 </script>
 
 <template>
-	<NModal title="卡牌大师" v-model:show="show" style="width: 90%; max-width: 900px;height: 200px; max-height: 500px" preset="card">
+	<NModal v-model:show="show" :title="promptsJsonOne.name" style="width: 90%; max-width: 900px;" preset="card">
 		<div style="margin-bottom: 50px">
-			描述....
+			<NForm ref="formRef" :model="model">
+				<NFormItem v-for="item in promptsFormConfig.formItem" :path="item.prop" :label="item.name" :required="item.required">
+					<NInput v-if="item.type === 'input'" v-model:value="model[item.prop]" />
+					<NInput v-if="item.type === 'textarea'" type="textarea" maxlength="2500" :autosize="{
+        minRows: 3,
+        maxRows: 9999
+      }" show-count v-model:value="model[item.prop]" />
+					<NSelect  v-if="item.type === 'multipleSelect'" v-model:value="model[item.prop]" multiple :options="item.options" />
+					<NSelect  v-if="item.type === 'select'" v-model:value="model[item.prop]" :options="item.options" />
+				</NFormItem>
+				<NRow :gutter="[0, 24]">
+					<NCol :span="24">
+						<div style="display: flex; justify-content: flex-end">
+							<NButton
+								round
+								type="primary"
+								@click="handleValidateButtonClick"
+							>
+								提交
+							</NButton>
+						</div>
+					</NCol>
+				</NRow>
+			</NForm>
 		</div>
-		<footer :class="footerClass">
-			<div class="w-full max-w-screen-xl m-auto">
-				<div class="flex items-center justify-between space-x-2">
-					<NInputGroup>
-						<NButton type="primary">
-							问题：
-						</NButton>
-						<NInput
-							ref="inputRef1"
-							v-model:value="prompt"
-							type="textarea"
-							:placeholder="'placeholder'"
-							:autosize="{ minRows: 1, maxRows: 8 }"
-						/>
-						<NButton type="primary" @click="handleClickConfirm">
-							<template #icon>
-              <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
-              </span>
-							</template>
-						</NButton>
-					</NInputGroup>
-				</div>
-			</div>
-		</footer>
 	</NModal>
 </template>

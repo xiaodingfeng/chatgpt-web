@@ -76,11 +76,8 @@ watch(
 							 功能区
 						</NButton>
 					</div>
-					<PromptsTool></PromptsTool>
-					<div class="p-4">
-						<NGradientText style="font-size: 35px" type="info"  gradient="linear-gradient(90deg, red 0%, green 50%, blue 100%)">
-							Live Forever
-						</NGradientText>
+					<div class="flex-1 min-h-0 pb-4 overflow-hidden">
+						<PromptsTool></PromptsTool>
 					</div>
 				</main>
 				<footer class="flex items-center justify-between min-w-0 p-4 overflow-hidden border-t dark:border-neutral-800">

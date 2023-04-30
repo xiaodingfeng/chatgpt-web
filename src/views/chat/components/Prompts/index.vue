@@ -1,65 +1,37 @@
 <script lang="ts" setup>
-import { defineAsyncComponent, ref } from 'vue'
+import { defineAsyncComponent, ref  } from 'vue'
 import { defineComponent } from 'vue'
 import { useDialog } from 'naive-ui'
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
-import { NButton, NLayoutSider, NCollapse,NCollapseItem,NGradientText,NCarousel } from 'naive-ui'
+import { NButton, NLayoutSider, NCollapse,NCollapseItem,NGradientText,NCarousel,NScrollbar } from 'naive-ui'
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
 import PromptDialog from '@/views/chat/components/Prompts/PromptDialog.vue'
-const dataList = [
-	{
-		name: '产品经理',
-		value:'productPM',
-		cate: 'product',
-		cateName: '职业'
-	},
-	{
-		name: '程序员',
-		value:'productChild',
-		cate: 'product',
-		cateName: '职业'
-	},
-	{
-		name: '外译中',
-		value:'translateC_E',
-		cate: 'translate',
-		cateName: '翻译'
-	},
-	{
-		name: '中译外',
-		value:'translateC_E',
-		cate: 'translate',
-		cateName: '翻译'
-	}
-]
-const groupsList = dataList.reduce((acc, cur) => {
-	const key = cur.cate
-	if (!acc[key]) {
-		acc[key] = []
-	}
-	acc[key].push(cur)
-	return acc
-}, {})
+import { promptsJson, groupPromptsJson } from './prompts-json'
+const prompt_dialog = ref<InstanceType<typeof PromptDialog>>()
 const show = ref(false)
-function handleClickCollapsed() {
+const promptId = ref('')
+function handleClickCollapsed(id) {
 	show.value = true
+	prompt_dialog.value?.initData(show, id);
 }
 </script>
 
 <template>
-	<div class="flex-1 min-h-0 pb-4 overflow-hidden">
-		<NCollapse style="margin-left: 10px" arrow-placement="right">
+	<NScrollbar class="px-4">
+		<div class="flex flex-col gap-2 text-sm">
+		<NCollapse style="margin-left: 10px" arrow-placement="right" :default-expanded-names="['1']">
 			<NCollapseItem title="全部" name="1">
-				<NButton style="margin: 5px" v-for="item in dataList" type="primary" @click="handleClickCollapsed" dashed>
+				<NButton style="margin: 5px" v-for="item in promptsJson" type="primary" @click="handleClickCollapsed(item.id)" dashed>
 					{{ item.name }}
 				</NButton>
 			</NCollapseItem>
-			<NCollapseItem v-for="(values,key) in groupsList" :title="values[0].name" :name="key">
-				<NButton style="margin: 5px" v-for="item in values" type="primary" @click="handleClickCollapsed" dashed>
+			<NCollapseItem v-for="(values,key) in groupPromptsJson" :title="values[0].cateName" :name="key">
+				<NButton style="margin: 5px" v-for="item in values" type="primary" @click="handleClickCollapsed(item.id)" dashed>
 					{{ item.name }}
 				</NButton>
 			</NCollapseItem>
 		</NCollapse>
 	</div>
-	<PromptDialog v-model:visible="show" />
+	</NScrollbar>
+	<PromptDialog ref="prompt_dialog"/>
 </template>
